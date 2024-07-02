@@ -1,5 +1,7 @@
 docker compose up --build -d
 
-java src/main/java/com/tzuchaedahy/Main.java
+javac -d target/classes src/main/java/com/tzuchaedahy/**/*.java
+
+java -cp target/classes com.tzuchaedahy.application.Main
 
 docker compose down
