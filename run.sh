@@ -1,7 +1,7 @@
 docker compose up --build -d
 
-javac -d target/classes src/main/java/com/tzuchaedahy/**/*.java
+mvn clean package
 
-java -cp target/classes com.tzuchaedahy.application.Main
+java -jar ./target/flood-homeless-support-1.0-SNAPSHOT.jar
 
 docker compose down
