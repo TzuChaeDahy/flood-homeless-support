@@ -3,7 +3,7 @@ version: '3.9'
 services:
   db:
     build:
-      context: ./config/docker
+      context: ./config/docker/postgres
       dockerfile: Dockerfile
     ports:
       - "5432:5432"
