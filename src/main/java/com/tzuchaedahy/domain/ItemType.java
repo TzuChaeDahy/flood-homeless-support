@@ -2,12 +2,16 @@ package com.tzuchaedahy.domain;
 
 import com.tzuchaedahy.exceptions.DomainException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 public class ItemType {
     private UUID id;
     private String name;
+    private final List<String> defaultAttributes = new ArrayList<>();
+    private final List<String> defaultNames = new ArrayList<>();
 
     public ItemType() {
     }
@@ -30,6 +34,22 @@ public class ItemType {
         }
 
         this.name = name.trim().toLowerCase();
+    }
+
+    public List<String> getDefaultAttributes() {
+        return defaultAttributes;
+    }
+
+    public void setDefaultAttribute(String attribute) {
+        this.defaultAttributes.add(attribute);
+    }
+
+    public List<String> getDefaultNames() {
+        return defaultNames;
+    }
+
+    public void setDefaultName(String name) {
+        this.defaultNames.add(name);
     }
 
     @Override
