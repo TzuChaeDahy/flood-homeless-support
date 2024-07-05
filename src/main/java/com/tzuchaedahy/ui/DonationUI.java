@@ -3,12 +3,10 @@ package com.tzuchaedahy.ui;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import com.tzuchaedahy.controllers.*;
-import com.tzuchaedahy.domain.Donation;
-import com.tzuchaedahy.domain.Item;
-import com.tzuchaedahy.domain.ItemDonation;
-import com.tzuchaedahy.domain.ItemType;
+import com.tzuchaedahy.domain.*;
 import com.tzuchaedahy.util.StringFormatter;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -57,44 +55,6 @@ public class DonationUI {
         } while (keepGoing);
     }
 
-    public static Map<String, String> mapItemAttributes(ItemType itemType) {
-        Map<String, String> itemAttributes = new HashMap<>();
-
-        for (String attribute : itemType.getDefaultAttributes()) {
-            UI.clearScreen();
-            System.out.printf("Qual o(a) %s: ", attribute);
-            String result = scanner.next();
-
-            itemAttributes.put(attribute, result);
-        }
-
-        return itemAttributes;
-    }
-
-    public static Map<String, String> mapItemAttributes(ItemType itemType, String attributes) {
-        Map<String, String> itemAttributes = new HashMap<>();
-        if (attributes.isEmpty() | attributes.isBlank()) {
-            return itemAttributes;
-        }
-
-        String[] attributesList = attributes.split("!");
-        List<String> defaultAttributes = itemType.getDefaultAttributes();
-
-        System.out.println(defaultAttributes.size() + " " + attributesList.length);
-        UI.delay(1000);
-
-        if (attributesList.length != defaultAttributes.size()) {
-            UI.showCustomMessage("o numero de atributos e incoerente.");
-            return null;
-        }
-
-        for (int i = 0; i < attributesList.length; i++) {
-            itemAttributes.put(defaultAttributes.get(i), attributesList[i]);
-        }
-
-        return itemAttributes;
-    }
-
     public static void handleCreateDonation() {
         UI.clearScreen();
         System.out.print("Escolha um dos centros de distribuicao: \n\n");
@@ -135,12 +95,12 @@ public class DonationUI {
 
         Integer itemTypeIndex = scanner.nextInt();
 
-        // TODO: IMPLEMENTAR VALIDAÇAO CASO 1000 PRODUTOS
-
         if (itemTypeIndex < 1 || itemTypeIndex > distributionCenters.size()) {
             UI.showInvalidOptionMessage();
             return;
         }
+
+        // TODO: IMPLEMENTAR VALIDAÇAO CASO 1000 PRODUTOS
 
         UI.clearScreen();
         System.out.print("Qual o produto?\n\n");
@@ -195,23 +155,22 @@ public class DonationUI {
 
     public static void handleCSVCreateDonation() {
         UI.clearScreen();
+
         System.out.println("Digite o caminho do arquivo csv partindo da pasta resource (ex.: csv/data.csv): ");
+
         scanner.nextLine();
 
-        String path = "/home/tzuchaedahy/IdeaProjects/flood-homeless-support/src/main/resources/" + scanner.nextLine();
-//        TODO: FIX CSV BUG
         List<String[]> lines = new ArrayList<>();
-        try (CSVReader reader = new CSVReader(new FileReader(path))) {
-            while (reader.readNext() != null) {
-                lines.add(reader.readNext());
+        String path = "/home/tzuchaedahy/IdeaProjects/flood-homeless-support/src/main/resources/" + scanner.nextLine();
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            reader.readLine();
+
+            while (reader.ready()) {
+                lines.add(reader.readLine().split(","));
             }
         } catch (IOException e) {
             UI.clearScreen();
             UI.showCustomMessage("Nao foi possivel ler o arquivo csv.");
-            return;
-        } catch (CsvValidationException e) {
-            UI.clearScreen();
-            UI.showCustomMessage("Nao foi validar o arquivo csv.");
             return;
         }
 
@@ -261,8 +220,43 @@ public class DonationUI {
             itemDonation.setQuantity(quantity);
             itemDonationController.save(itemDonation);
         });
-        UI.delay(1000);
+        
         UI.clearScreen();
         UI.showCustomMessage("Dados salvos com sucesso!");
+    }
+
+    public static Map<String, String> mapItemAttributes(ItemType itemType) {
+        Map<String, String> itemAttributes = new HashMap<>();
+
+        for (String attribute : itemType.getDefaultAttributes()) {
+            UI.clearScreen();
+            System.out.printf("Qual o(a) %s: ", attribute);
+            String result = scanner.next();
+
+            itemAttributes.put(attribute, result);
+        }
+
+        return itemAttributes;
+    }
+
+    public static Map<String, String> mapItemAttributes(ItemType itemType, String attributes) {
+        Map<String, String> itemAttributes = new TreeMap<>();
+        if (attributes.isEmpty() | attributes.isBlank()) {
+            return itemAttributes;
+        }
+
+        String[] attributesList = attributes.split("!");
+        List<String> defaultAttributes = itemType.getDefaultAttributes();
+
+        if (attributesList.length != defaultAttributes.size()) {
+            UI.showCustomMessage("o numero de atributos e incoerente.");
+            return null;
+        }
+
+        for (int i = 0; i < attributesList.length; i++) {
+            itemAttributes.put(defaultAttributes.get(i), attributesList[i]);
+        }
+
+        return itemAttributes;
     }
 }
