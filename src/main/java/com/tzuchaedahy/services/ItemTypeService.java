@@ -15,4 +15,20 @@ public class ItemTypeService {
     public List<ItemType> findAll() {
         return this.itemTypeRepository.findAll();
     }
+
+    public ItemType findByName(String name) {
+        return itemTypeRepository.findByName(name);
+    }
+
+    public boolean isItemNamePossible(ItemType itemType, String name) {
+        var defaultNames = itemTypeRepository.findDefaultNames(itemType);
+
+        for (String defaultName : defaultNames) {
+            if (name.equals(defaultName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

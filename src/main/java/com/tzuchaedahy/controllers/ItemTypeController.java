@@ -23,4 +23,12 @@ public class ItemTypeController {
 
         return itemTypeMap;
     }
+
+    public ItemType findByName(String name) {
+        return itemTypeService.findByName(name);
+    }
+
+    public boolean isItemNamePossible(ItemType itemType, String name) {
+        return itemTypeService.isItemNamePossible(itemType, name);
+    }
 }

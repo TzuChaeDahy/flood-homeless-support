@@ -1,5 +1,7 @@
 package com.tzuchaedahy.ui;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import com.tzuchaedahy.controllers.*;
 import com.tzuchaedahy.domain.Donation;
 import com.tzuchaedahy.domain.Item;
@@ -7,9 +9,9 @@ import com.tzuchaedahy.domain.ItemDonation;
 import com.tzuchaedahy.domain.ItemType;
 import com.tzuchaedahy.util.StringFormatter;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 public class DonationUI {
     public static Scanner scanner = new Scanner(System.in);
@@ -25,6 +27,7 @@ public class DonationUI {
         System.out.println("Flood Homeless Support - Menu de Doador");
         System.out.println();
         System.out.println("1. Realizar doaçao");
+        System.out.println("2. Realizar doaçoes atraves de arquivo csv");
         System.out.println();
         System.out.println("0. Voltar ao menu inicial");
     }
@@ -44,6 +47,10 @@ public class DonationUI {
                     UI.showRedirectingMessage();
                     handleCreateDonation();
                     break;
+                case 2:
+                    UI.showRedirectingMessage();
+                    handleCSVCreateDonation();
+                    break;
                 default:
                     UI.showInvalidOptionMessage();
             }
@@ -59,6 +66,24 @@ public class DonationUI {
             String result = scanner.next();
 
             itemAttributes.put(attribute, result);
+        }
+
+        return itemAttributes;
+    }
+
+    public static Map<String, String> mapItemAttributes(ItemType itemType, String attributes) {
+        Map<String, String> itemAttributes = new HashMap<>();
+
+        String[] attributesList = attributes.split("/");
+        List<String> defaultAttributes = itemType.getDefaultAttributes();
+
+        if (attributesList.length != defaultAttributes.size()) {
+            UI.showCustomMessage("o numero de atributos e incoerente.");
+            return null;
+        }
+
+        for (int i = 0; i < attributesList.length; i++) {
+            itemAttributes.put(defaultAttributes.get(i), attributesList[i]);
         }
 
         return itemAttributes;
@@ -160,5 +185,78 @@ public class DonationUI {
         itemDonation.setItem(item);
         itemDonation.setQuantity(itemsQuantity);
         itemDonationController.save(itemDonation);
+    }
+
+    public static void handleCSVCreateDonation() {
+        UI.clearScreen();
+        System.out.println("Digite o caminho do arquivo csv partindo da pasta resource (ex.: csv/data.csv): ");
+        scanner.nextLine();
+
+        String path = "/home/tzuchaedahy/IdeaProjects/flood-homeless-support/src/main/resources/" + scanner.nextLine();
+
+        List<String[]> lines = new ArrayList<>();
+        try (CSVReader reader = new CSVReader(new FileReader(path))) {
+            while (reader.readNext() != null) {
+                lines.add(reader.readNext());
+            }
+        } catch (IOException e) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nao foi possivel ler o arquivo csv.");
+            return;
+        } catch (CsvValidationException e) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nao foi validar o arquivo csv.");
+            return;
+        }
+
+        lines.forEach(line -> {
+            var distributionCenter = distributionCenterController.findByName(line[0]);
+            if (distributionCenter == null) {
+                UI.clearScreen();
+                UI.showCustomMessage(String.format("o centro de distribuicao de nome %s nao pode ser encontrado.", line[0]));
+                return;
+            }
+            var itemType = itemTypeController.findByName(line[1]);
+            if (itemType == null) {
+                UI.clearScreen();
+                UI.showCustomMessage(String.format("o tipo de item de nome %s nao pode ser encontrado.", line[1]));
+                return;
+            }
+
+            var isItemNamePossible = itemTypeController.isItemNamePossible(itemType, line[2]);
+            if (!isItemNamePossible) {
+                UI.clearScreen();
+                UI.showCustomMessage(String.format("o nome %s nao esta na lista de possiveis itens.", line[2]));
+                return;
+            }
+
+            var name = line[2];
+
+            var itemAttributes = mapItemAttributes(itemType, line[3]);
+            if (itemAttributes == null) {
+                return;
+            }
+
+            int quantity = Integer.parseInt(line[4]);
+
+            var donation = new Donation();
+            donation.setDistributionCenter(distributionCenter);
+            donationController.save(donation);
+
+            var item = new Item();
+            item.setItemType(itemType);
+            item.setName(name);
+            item.setAttributes(itemAttributes);
+            itemController.save(item);
+
+            var itemDonation = new ItemDonation();
+            itemDonation.setDonation(donation);
+            itemDonation.setItem(item);
+            itemDonation.setQuantity(quantity);
+            itemDonationController.save(itemDonation);
+
+            UI.clearScreen();
+            UI.showCustomMessage("Dados salvos com sucesso!");
+        });
     }
 }

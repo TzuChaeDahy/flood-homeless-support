@@ -15,4 +15,8 @@ public class DistributionCenterService {
     public List<DistributionCenter> findAll() {
         return distributionCenterRepository.findAll();
     }
+
+    public DistributionCenter findByName(String name) {
+        return distributionCenterRepository.findByName(name);
+    }
 }
