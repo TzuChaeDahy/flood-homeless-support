@@ -100,8 +100,6 @@ public class DonationUI {
             return;
         }
 
-        // TODO: IMPLEMENTAR VALIDAÇAO CASO 1000 PRODUTOS
-
         UI.clearScreen();
         System.out.print("Qual o produto?\n\n");
 
@@ -133,6 +131,18 @@ public class DonationUI {
 
         if (itemsQuantity < 1) {
             UI.showInvalidOptionMessage();
+            return;
+        }
+
+        var canReceiveDonation = itemDonationController.canReceiveDonation(
+                distributionCenters.get(distributionCenterIndex.toString()),
+                itemTypes.get(itemTypeIndex.toString()),
+                itemsQuantity
+        );
+
+        if (!canReceiveDonation) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nao foi possivel adicionar essa doacao, pois a sua quantidade excede o limite do estoque.");
             return;
         }
 
@@ -204,6 +214,18 @@ public class DonationUI {
 
             int quantity = Integer.parseInt(line[4]);
 
+            var canReceiveDonation = itemDonationController.canReceiveDonation(
+                    distributionCenter,
+                    itemType,
+                    quantity
+            );
+
+            if (!canReceiveDonation) {
+                UI.clearScreen();
+                UI.showCustomMessage("Nao foi possivel adicionar uma das doacoes, pois a sua quantidade excede o limite do estoque.");
+                return;
+            }
+
             var donation = new Donation();
             donation.setDistributionCenter(distributionCenter);
             donationController.save(donation);
@@ -220,7 +242,7 @@ public class DonationUI {
             itemDonation.setQuantity(quantity);
             itemDonationController.save(itemDonation);
         });
-        
+
         UI.clearScreen();
         UI.showCustomMessage("Dados salvos com sucesso!");
     }

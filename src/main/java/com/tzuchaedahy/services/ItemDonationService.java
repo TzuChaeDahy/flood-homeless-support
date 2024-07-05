@@ -2,6 +2,7 @@ package com.tzuchaedahy.services;
 
 import com.tzuchaedahy.domain.DistributionCenter;
 import com.tzuchaedahy.domain.ItemDonation;
+import com.tzuchaedahy.domain.ItemType;
 import com.tzuchaedahy.repositories.ItemDonationRepository;
 
 import java.util.List;
@@ -19,5 +20,15 @@ public class ItemDonationService {
 
     public List<ItemDonation> findAllSimplifiedByDistributionCenter(DistributionCenter distributionCenter) {
         return itemDonationRepository.findAllSimplifiedByDistributionCenter(distributionCenter);
+    }
+
+    public boolean canReceiveDonation(DistributionCenter distributionCenter, ItemType itemType, Integer amount) {
+        int quantity = itemDonationRepository.countItemsByDistributionCenterAndType(distributionCenter, itemType);
+
+        if (quantity + amount > 1000) {
+            return false;
+        }
+
+        return true;
     }
 }

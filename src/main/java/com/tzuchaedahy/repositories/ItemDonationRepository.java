@@ -7,6 +7,7 @@ import com.tzuchaedahy.domain.*;
 import com.tzuchaedahy.exceptions.RepositoryException;
 import com.tzuchaedahy.repositories.db.Db;
 
+import javax.lang.model.element.QualifiedNameable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -87,5 +88,32 @@ public class ItemDonationRepository {
         }
 
         return itemDonations;
+    }
+
+    public Integer countItemsByDistributionCenterAndType(DistributionCenter distributionCenter, ItemType itemType) {
+        PreparedStatement statement = null;
+        ResultSet result = null;
+        String query = "select sum(itd.quantity) from item_donation itd inner join donation d on itd.donation_id = d.id inner join item i on itd.item_id = i.id where d.distribution_center_id = (?) and i.item_type_id = (?)";
+
+        int quantity = 0;
+        try {
+            statement = conn.prepareStatement(query);
+
+            statement.setObject(1, distributionCenter.getId());
+            statement.setObject(2, itemType.getId());
+
+            result = statement.executeQuery();
+
+            if (result.next()) {
+                quantity = result.getInt("sum");
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("ocorreu um erro ao buscar todos os items");
+        }finally {
+            Db.closeStatement(statement);
+            Db.closeResultSet(result);
+        }
+
+        return quantity;
     }
 }
