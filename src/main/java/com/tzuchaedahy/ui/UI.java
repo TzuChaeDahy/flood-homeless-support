@@ -41,9 +41,9 @@ public class UI {
         System.out.println("Flood Homeless Support - Menu Inicial");
         System.out.println();
         System.out.println("Selecione uma opçao: ");
-        System.out.println("1. Entrar como doador");
-        System.out.println("2. Entrar como centro de distribuiçao");
-        System.out.println("3. Entrar como abrigo");
+        System.out.println("1. Menu de doador");
+        System.out.println("2. Menu de centro de distribuiçao");
+        System.out.println("3. Menu de abrigo");
         System.out.println();
         System.out.println("0. Sair da aplicaçao");
 
