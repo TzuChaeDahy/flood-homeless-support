@@ -1,5 +1,8 @@
 package com.tzuchaedahy.repositories;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tzuchaedahy.domain.*;
 import com.tzuchaedahy.exceptions.RepositoryException;
 import com.tzuchaedahy.repositories.db.Db;
@@ -11,6 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class ItemDonationRepository {
     private Connection conn;
@@ -40,11 +44,12 @@ public class ItemDonationRepository {
 
     }
 
-    public List<ItemDonation> findAllByDistributionCenter(DistributionCenter distributionCenter) {
+    public List<ItemDonation> findAllSimplifiedByDistributionCenter(DistributionCenter distributionCenter) {
         PreparedStatement statement = null;
         ResultSet result = null;
-        String query = "SELECT it.name AS item_type_name, i.name AS item_name, i.attributes - 'validade' AS attributes, SUM(idn.quantity) AS total_quantity FROM item i JOIN item_type it ON i.item_type_id = it.id JOIN item_donation idn ON i.id = idn.item_id JOIN donation d ON idn.donation_id = d.id WHERE d.distribution_center_id = (?) GROUP BY it.name, i.name, i.attributes ORDER BY it.name, i.name";
+        String query = "SELECT it.name AS item_type_name, i.name AS item_name, i.attributes - 'validade' AS attributes, it.default_names AS default_names,  SUM(idn.quantity) AS total_quantity FROM item i JOIN item_type it ON i.item_type_id = it.id JOIN item_donation idn ON i.id = idn.item_id JOIN donation d ON idn.donation_id = d.id WHERE d.distribution_center_id = (?) GROUP BY it.name, i.name, i.attributes,it.default_names ORDER BY it.name, i.name";
 
+        ObjectMapper mapper = new ObjectMapper();
         List<ItemDonation> itemDonations = new ArrayList<>();
         try {
             statement = conn.prepareStatement(query);
@@ -61,9 +66,10 @@ public class ItemDonationRepository {
                 itemType.setName(result.getString("item_type_name"));
                 item.setItemType(itemType);
 
-                result.getObject("attributes", Map.class).forEach((index, value) -> {
-                    item.setAttribute((String) index, (String) value);
+                var attributes = result.getString("attributes");
+                Map<String, String> attributesMap = mapper.readValue(attributes, new TypeReference<>() {
                 });
+                item.setAttributes(attributesMap);
 
                 itemDonation.setDonation(donation);
                 itemDonation.setItem(item);
@@ -73,7 +79,9 @@ public class ItemDonationRepository {
             }
         } catch (SQLException e) {
             throw new RepositoryException("ocorreu um erro ao buscar todos os items");
-        } finally {
+        } catch (JsonProcessingException e) {
+            throw new RepositoryException("ocorreu ao converter atributos");
+        }finally {
             Db.closeStatement(statement);
             Db.closeResultSet(result);
         }

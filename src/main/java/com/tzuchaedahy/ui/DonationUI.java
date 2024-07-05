@@ -73,9 +73,15 @@ public class DonationUI {
 
     public static Map<String, String> mapItemAttributes(ItemType itemType, String attributes) {
         Map<String, String> itemAttributes = new HashMap<>();
+        if (attributes.isEmpty() | attributes.isBlank()) {
+            return itemAttributes;
+        }
 
-        String[] attributesList = attributes.split("/");
+        String[] attributesList = attributes.split("!");
         List<String> defaultAttributes = itemType.getDefaultAttributes();
+
+        System.out.println(defaultAttributes.size() + " " + attributesList.length);
+        UI.delay(1000);
 
         if (attributesList.length != defaultAttributes.size()) {
             UI.showCustomMessage("o numero de atributos e incoerente.");
@@ -193,7 +199,7 @@ public class DonationUI {
         scanner.nextLine();
 
         String path = "/home/tzuchaedahy/IdeaProjects/flood-homeless-support/src/main/resources/" + scanner.nextLine();
-
+//        TODO: FIX CSV BUG
         List<String[]> lines = new ArrayList<>();
         try (CSVReader reader = new CSVReader(new FileReader(path))) {
             while (reader.readNext() != null) {
@@ -254,9 +260,9 @@ public class DonationUI {
             itemDonation.setItem(item);
             itemDonation.setQuantity(quantity);
             itemDonationController.save(itemDonation);
-
-            UI.clearScreen();
-            UI.showCustomMessage("Dados salvos com sucesso!");
         });
+        UI.delay(1000);
+        UI.clearScreen();
+        UI.showCustomMessage("Dados salvos com sucesso!");
     }
 }
