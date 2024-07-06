@@ -1,9 +1,8 @@
 package com.tzuchaedahy.domain;
 
-import com.tzuchaedahy.exceptions.DomainException;
-
 import java.util.Objects;
-import java.util.UUID;
+
+import com.tzuchaedahy.exceptions.DomainException;
 
 public class ItemDonation {
     private Integer quantity;

@@ -1,13 +1,5 @@
 package com.tzuchaedahy.repositories;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tzuchaedahy.domain.*;
-import com.tzuchaedahy.exceptions.RepositoryException;
-import com.tzuchaedahy.repositories.db.Db;
-
-import javax.lang.model.element.QualifiedNameable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,7 +7,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tzuchaedahy.domain.DistributionCenter;
+import com.tzuchaedahy.domain.Donation;
+import com.tzuchaedahy.domain.Item;
+import com.tzuchaedahy.domain.ItemDonation;
+import com.tzuchaedahy.domain.ItemType;
+import com.tzuchaedahy.exceptions.RepositoryException;
+import com.tzuchaedahy.repositories.db.Db;
 
 public class ItemDonationRepository {
     private Connection conn;
