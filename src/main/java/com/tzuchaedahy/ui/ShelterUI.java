@@ -98,7 +98,7 @@ public class ShelterUI {
 
         final int[] i = {1};
         shelters.forEach(shelter -> {
-            System.out.printf("%s. %s", i[0], shelter.getName());
+            System.out.printf("%s. %s\n", i[0], shelter.getName());
             i[0]++;
         });
 
@@ -109,7 +109,7 @@ public class ShelterUI {
             return;
         }
 
-        var shelter = shelters.get(option);
+        var shelter = shelters.get(option - 1);
 
         handleChosenShelterMenu(shelter);
     }
@@ -118,6 +118,7 @@ public class ShelterUI {
         UI.clearScreen();
         System.out.printf("Flood Homeless Support - Menu de Abrigo - %s\n", name);
         System.out.println();
+        System.out.println("1. Visualizar dados do abrigo");
         System.out.println();
         System.out.println("0. Voltar ao menu anterior");
     }
@@ -133,9 +134,37 @@ public class ShelterUI {
                     UI.showRedirectingMessage();
                     keepGoing = false;
                     break;
+                case 1:
+                    UI.showRedirectingMessage();
+                    handleViewShelterInformation(shelter);
+                    break;
                 default:
                     UI.showInvalidOptionMessage();
             }
         } while (keepGoing);
+    }
+
+    private static void handleViewShelterInformation(Shelter shelter) {
+        UI.clearScreen();
+
+        var donatedItems = shelterController.findDonatedItemTypesQuantities(shelter);
+
+        System.out.printf("Nome: %s\n", shelter.getName());
+        System.out.printf("Endereço: %s\n", shelter.getAddress());
+        System.out.printf("Nome do Responsável: %s\n", shelter.getResponsible());
+        System.out.printf("Email: %s\n", shelter.getEmail());
+        System.out.printf("Telefone: %s\n", shelter.getPhone());
+        System.out.printf("Capacidade Total: %s\n", shelter.getCapacity());
+        System.out.printf("Ocupação: %s%%\n", (shelter.getOccupation() / shelter.getCapacity()));
+        System.out.println("Unidade de itens recebidos: ");
+        if (donatedItems.size() <= 0) {
+            System.out.println("Ainda não existem itens doados");
+        } else {
+            donatedItems.forEach((key, value) -> {
+                System.out.printf("  %s: %s unidades\n", key, value);
+            });
+        }
+
+        scanner.next();
     }
 }

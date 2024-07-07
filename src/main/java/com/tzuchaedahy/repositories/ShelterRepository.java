@@ -10,7 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class ShelterRepository {
@@ -75,5 +77,30 @@ public class ShelterRepository {
         }
 
         return shelters;
+    }
+
+    public Map<String, Integer> findDonatedItemTypesQuantities(Shelter shelter) {
+        PreparedStatement statement = null;
+        ResultSet result = null;
+        String query = "select it.name as name, sum(oi.quantity) as quantity from shelter s inner join \"order\" o on o.shelter_id = s.id inner join order_status os on os.id = o.order_status_id inner join order_item oi on oi.order_id = o.id inner join item i on oi.item_id = i.id inner join item_type it on i.item_type_id = it.id where s.id = (?) and os.name = 'aceito' group by it.name";
+
+        Map<String, Integer> itemTypesQuantities = new HashMap<>();
+        try {
+            statement = conn.prepareStatement(query);
+            statement.setObject(1, shelter.getId());
+
+            result = statement.executeQuery();
+
+            while (result.next()) {
+                itemTypesQuantities.put(result.getString("name"), result.getInt("quantity"));
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("ocorreu um erro ao buscar as quantidades de itens doados" + e.getMessage());
+        } finally {
+            Db.closeStatement(statement);
+            Db.closeResultSet(result);
+        }
+
+        return itemTypesQuantities;
     }
 }
