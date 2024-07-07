@@ -1,5 +1,7 @@
 package com.tzuchaedahy.controllers;
 
+import java.util.List;
+
 import com.tzuchaedahy.domain.Shelter;
 import com.tzuchaedahy.services.ShelterService;
 
@@ -12,5 +14,9 @@ public class ShelterController {
 
     public void save(Shelter shelter) {
         shelterService.save(shelter);
+    }
+
+    public List<Shelter> findAll() {
+        return shelterService.findAll();
     }
 }

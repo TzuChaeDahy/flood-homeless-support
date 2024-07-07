@@ -104,7 +104,7 @@ public class Shelter {
     }
 
     public void setOccupation(Integer occupation) {
-        if (occupation < 1) {
+        if (occupation < 0) {
             throw new DomainException("occupation cannot be less than one.");
         }
 
