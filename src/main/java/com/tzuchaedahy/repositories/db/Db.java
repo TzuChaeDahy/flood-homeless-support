@@ -14,7 +14,7 @@ public class Db {
     public static Properties loadProperties() {
         Properties props = new Properties();
 
-        var path = "/home/tzuchaedahy/IdeaProjects/flood-homeless-support/src/main/resources/db.properties";
+        var path = "/home/tzuchaedahy/VSCode/flood-homeless-support/src/main/resources/db.properties";
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             props.load(reader);
         } catch (IOException e) {

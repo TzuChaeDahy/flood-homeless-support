@@ -12,14 +12,34 @@ create table item_type
     default_attributes varchar(255)[] not null,
     default_names       varchar(255)[] not null,
 
-    primary key (id)
-);
 
-insert into item_type (name, default_attributes, default_names)
-values ('roupas', '{tamanho, genero}', '{camisa,agasalho}'),
-       ('higiene', '{}', '{sabonete,escova de dente,pasta de dente,absorvente}'),
-       ('comidas', '{peso,unidade de medida,validade}', '{arroz,feijao,macarrao,frango}');
+primary key (id) );
 
+insert into
+    item_type (
+        id,
+        name,
+        default_attributes,
+        default_names
+    )
+values (
+        'b639837c-de33-4328-bccf-a6890a32c72d',
+        'roupas',
+        '{tamanho, genero}',
+        '{camisa,agasalho}'
+    ),
+    (
+        '1b274519-eb1d-442a-9c54-bd3219934c50',
+        'higiene',
+        '{}',
+        '{sabonete,escova de dente,pasta de dente,absorvente}'
+    ),
+    (
+        'e952f1d9-8813-4712-8be7-3616cb642372',
+        'comidas',
+        '{peso,unidade de medida,validade}',
+        '{arroz,feijao,macarrao,frango}'
+    );
 ---------- TABELA ITEM ----------
 create table item
 (
@@ -28,11 +48,10 @@ create table item
     attributes   jsonb        not null,
     item_type_id uuid         not null default uuid_generate_v4(),
 
+
     primary key (id),
     foreign key (item_type_id) references item_type (id)
 );
-
-
 
 ---------- TABELA CENTRO DE DISTRIBUIÇAO ----------
 create table distribution_center
@@ -41,21 +60,35 @@ create table distribution_center
     name    varchar(255) not null,
     address varchar(255) not null,
 
-    primary key (id)
-);
 
-insert into distribution_center (name, address)
-values ('esperança', 'av. boqueirão, 2450 - igara, canoas - rs, 92032-420'),
-       ('prosperidade', 'av. borges de medeiros, 1501 – cidade baixa, porto
-alegre - rs, 90119-900'),
-       ('reconstruçao', 'r. dr. décio martins costa, 312 - vila eunice nova,
-cachoeirinha - rs, 94920-170');
+primary key (id) );
+
+insert into
+    distribution_center (id, name, address)
+values (
+        'eccbd146-6940-42fb-9b70-2de9506940b3',
+        'esperança',
+        'av. boqueirão, 2450 - igara, canoas - rs, 92032-420'
+    ),
+    (
+        '173767e8-d2c1-4545-bef5-d8baff788ca3',
+        'prosperidade',
+        'av. borges de medeiros, 1501 – cidade baixa, porto
+alegre - rs, 90119-900'
+    ),
+    (
+        '5179d172-b1c3-4769-b75e-0c34d74c736f',
+        'reconstruçao',
+        'r. dr. décio martins costa, 312 - vila eunice nova,
+cachoeirinha - rs, 94920-170'
+    );
 
 ---------- TABELA DOAÇAO ----------
 create table donation
 (
     id                     uuid not null default uuid_generate_v4(),
     distribution_center_id uuid not null,
+
 
     primary key (id),
     foreign key (distribution_center_id) references distribution_center (id)
@@ -68,6 +101,7 @@ create table item_donation
     donation_id uuid    not null,
     quantity    integer not null,
 
+
     primary key (item_id, donation_id),
     foreign key (item_id) references item (id),
     foreign key (donation_id) references donation (id)
@@ -79,8 +113,23 @@ create table order_status
     id   uuid         not null default uuid_generate_v4(),
     name varchar(255) not null,
 
-    primary key (id)
-);
+
+primary key (id) );
+
+insert into
+    order_status (id, name)
+values (
+        '75040965-0e33-4eba-a94a-4f21d3be3ce0',
+        'aceito'
+    ),
+    (
+        '8ad87d55-cac7-4bc3-992b-7de5dc71704e',
+        'recusado'
+    ),
+    (
+        '1e6ea845-8af0-4468-afb5-b9e6bed8738b',
+        'em espera'
+    );
 
 ---------- TABELA ABRIGO ----------
 create table shelter
@@ -94,8 +143,8 @@ create table shelter
     capacity    integer      not null,
     occupation  integer      not null,
 
-    primary key (id)
-);
+
+primary key (id) );
 
 ---------- TABELA ITEM POR PEDIDO ----------
 create table "order"
@@ -104,6 +153,7 @@ create table "order"
     name            varchar(255) not null,
     order_status_id uuid         not null,
     shelter_id      uuid         not null,
+
 
     primary key (id),
     foreign key (order_status_id) references order_status (id),
@@ -117,10 +167,8 @@ create table order_item
     item_id  uuid    not null,
     quantity integer not null,
 
+
     primary key (item_id, order_id),
     foreign key (order_id) references "order" (id),
     foreign key (item_id) references item (id)
 );
-
-
-
