@@ -146,11 +146,15 @@ create table shelter
 
 primary key (id) );
 
+insert into shelter (id, name, address, responsible, phone, email, capacity, occupation)
+values ('2eedd538-c9a1-4e90-b528-9b1f05cbd1fc', 'cuidado', 'r. angelita ferro de melo, 312 - vila eunice nova,
+cachoeirinha - rs, 94920-170', 'marcelo', '51999990000', 'marcelo@cuidado.com', 100, 24);
+
 ---------- TABELA ITEM POR PEDIDO ----------
 create table "order"
 (
     id              uuid         not null default uuid_generate_v4(),
-    name            varchar(255) not null,
+    description            varchar(255),
     order_status_id uuid         not null,
     shelter_id      uuid         not null,
 

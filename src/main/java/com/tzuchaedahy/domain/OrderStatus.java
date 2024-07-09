@@ -32,6 +32,14 @@ public class OrderStatus {
         this.name = name.trim().toLowerCase();
     }
 
+    public static OrderStatus defaultStatus() {
+        var orderStatus = new OrderStatus();
+        orderStatus.setId(UUID.fromString("1e6ea845-8af0-4468-afb5-b9e6bed8738b"));
+        orderStatus.setName("em espera");
+
+        return orderStatus;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -6,6 +6,7 @@ import com.tzuchaedahy.domain.ItemType;
 import com.tzuchaedahy.repositories.ItemDonationRepository;
 
 import java.util.List;
+import java.util.Map;
 
 public class ItemDonationService {
     private final ItemDonationRepository itemDonationRepository;
@@ -30,5 +31,9 @@ public class ItemDonationService {
         }
 
         return true;
+    }
+
+    public Map<String, List<ItemDonation>> findAvailableItemsByName(String name) {
+        return itemDonationRepository.findAvailableItemsByName(name);
     }
 }

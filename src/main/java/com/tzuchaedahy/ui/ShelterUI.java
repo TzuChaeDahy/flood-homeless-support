@@ -1,15 +1,31 @@
 package com.tzuchaedahy.ui;
 
-import com.tzuchaedahy.controllers.ShelterController;
-import com.tzuchaedahy.domain.Shelter;
-
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+
+import com.tzuchaedahy.controllers.ItemDonationController;
+import com.tzuchaedahy.controllers.ItemTypeController;
+import com.tzuchaedahy.controllers.OrderController;
+import com.tzuchaedahy.controllers.OrderItemController;
+import com.tzuchaedahy.controllers.ShelterController;
+import com.tzuchaedahy.domain.ItemDonation;
+import com.tzuchaedahy.domain.ItemType;
+import com.tzuchaedahy.domain.Order;
+import com.tzuchaedahy.domain.OrderItem;
+import com.tzuchaedahy.domain.OrderStatus;
+import com.tzuchaedahy.domain.Shelter;
 
 public class ShelterUI {
     public static Scanner scanner = new Scanner(System.in);
 
     public static ShelterController shelterController = new ShelterController();
+    public static ItemTypeController ItemTypeController = new ItemTypeController();
+    public static ItemDonationController itemDonationController = new ItemDonationController();
+
+    private static OrderItemController orderItemController = new OrderItemController();
+    private static OrderController orderController = new OrderController();
 
     public static void showMenu() {
         UI.clearScreen();
@@ -56,7 +72,8 @@ public class ShelterUI {
         shelter.setName(scanner.nextLine());
 
         UI.clearScreen();
-        System.out.print("Endereço do abrigo (ex.: r. dr. décio martins costa, 312 - vila eunice nova, cachoeirinha - rs, 94920-170) :");
+        System.out.print(
+                "Endereço do abrigo (ex.: r. dr. décio martins costa, 312 - vila eunice nova, cachoeirinha - rs, 94920-170) :");
         shelter.setAddress(scanner.nextLine());
 
         UI.clearScreen();
@@ -96,7 +113,7 @@ public class ShelterUI {
 
         System.out.println("Escolha um abrigo: ");
 
-        final int[] i = {1};
+        final int[] i = { 1 };
         shelters.forEach(shelter -> {
             System.out.printf("%s. %s\n", i[0], shelter.getName());
             i[0]++;
@@ -119,6 +136,7 @@ public class ShelterUI {
         System.out.printf("Flood Homeless Support - Menu de Abrigo - %s\n", name);
         System.out.println();
         System.out.println("1. Visualizar dados do abrigo");
+        System.out.println("2. Solicitar itens");
         System.out.println();
         System.out.println("0. Voltar ao menu anterior");
     }
@@ -138,6 +156,10 @@ public class ShelterUI {
                     UI.showRedirectingMessage();
                     handleViewShelterInformation(shelter);
                     break;
+                case 2:
+                    UI.showRedirectingMessage();
+                    handleItemsCheckout(shelter);
+                    break;
                 default:
                     UI.showInvalidOptionMessage();
             }
@@ -155,7 +177,8 @@ public class ShelterUI {
         System.out.printf("Email: %s\n", shelter.getEmail());
         System.out.printf("Telefone: %s\n", shelter.getPhone());
         System.out.printf("Capacidade Total: %s\n", shelter.getCapacity());
-        System.out.printf("Ocupação: %s%%\n", (shelter.getOccupation() / shelter.getCapacity()));
+        System.out.printf("Ocupação: %.2f%%\n",
+                ((float) shelter.getOccupation() / (float) shelter.getCapacity()) * 100);
         System.out.println("Unidade de itens recebidos: ");
         if (donatedItems.size() <= 0) {
             System.out.println("Ainda não existem itens doados");
@@ -166,5 +189,115 @@ public class ShelterUI {
         }
 
         scanner.next();
+    }
+
+    private static void handleItemsCheckout(Shelter shelter) {
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        Order order = new Order();
+        order.setShelter(shelter);
+        order.setStatus(OrderStatus.defaultStatus());
+
+        boolean keepGoing = true;
+        do {
+            var orderItem = chooseItem(shelter);
+
+            if (orderItem == null) {
+                return;
+            }
+            orderItems.add(orderItem);
+
+            UI.clearScreen();
+            System.out.println("Selecionar outro item (s/n)? ");
+            keepGoing = scanner.next().charAt(0) == 's' ? true : false;
+        } while (keepGoing);
+
+        if (orderItems.size() <= 0) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nenhum item foi selecionado.");
+            return;
+        }
+
+        orderController.save(order);
+        orderItems.forEach(orderItem -> orderItem.setOrder(order));
+        orderItemController.saveAll(orderItems);
+
+        UI.clearScreen();
+        UI.showCustomMessage("Dados salvos com sucesso!");
+    }
+
+    public static OrderItem chooseItem(Shelter shelter) {
+        UI.clearScreen();
+        System.out.println("Que tipo de item voce deseja solicitar?");
+
+        Map<String, ItemType> itemTypes = ItemTypeController.findAll();
+        itemTypes.forEach((key, value) -> {
+            System.out.printf("%s. %s\n", key, value.getName());
+        });
+
+        int itemTypeIndex = scanner.nextInt();
+        if (itemTypeIndex < 1 || itemTypeIndex > itemTypes.size()) {
+            UI.showInvalidOptionMessage();
+            return null;
+        }
+
+        UI.clearScreen();
+        System.out.println("Qual item deseja solicitar?");
+        final int[] i = { 1 };
+        itemTypes.get(String.valueOf(itemTypeIndex)).getDefaultNames().forEach(name -> {
+            System.out.printf("%s. %s\n", i[0], name);
+            i[0]++;
+        });
+
+        int itemNameIndex = scanner.nextInt();
+
+        if (itemNameIndex < 1 || itemNameIndex > itemTypes.size() + 1) {
+            UI.showInvalidOptionMessage();
+            return null;
+        }
+
+        String itemName = itemTypes.get(String.valueOf(itemTypeIndex)).getDefaultNames().get(itemNameIndex - 1);
+
+        UI.clearScreen();
+        System.out.println("Quantas unidades deseja solicitar? ");
+
+        int quantity = scanner.nextInt();
+
+        Map<String, List<ItemDonation>> availableItems = itemDonationController.findAvailableItemsByName(itemName);
+
+        if (availableItems.size() == 0) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nao foram encontrados itens disponiveis com esses atributos");
+            return null;
+        }
+
+        UI.clearScreen();
+        System.out.println("Essas sao os itens disponiveis para voce realizar o seu pedido:");
+
+        final int[] j = { 1 };
+        final List<ItemDonation> possibleItems = new ArrayList<>();
+        availableItems.forEach((distributionCenterName, items) -> {
+            System.out.println("Centro de Distribuicao: " + distributionCenterName);
+
+            items.forEach(item -> {
+                System.out.printf("  %s. ", j[0]);
+                item.getItem().getAttributes().forEach((key, value) -> {
+                    System.out.printf("%s ", value);
+                });
+                System.out.printf("(%s unidades)\n", item.getQuantity());
+
+                possibleItems.add(item);
+
+                j[0]++;
+            });
+        });
+
+        var item = possibleItems.get(scanner.nextInt() - 1);
+
+        OrderItem orderItem = new OrderItem();
+        orderItem.setItem(item.getItem());
+        orderItem.setQuantity(quantity < item.getQuantity() ? quantity : item.getQuantity());
+
+        return orderItem;
     }
 }

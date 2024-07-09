@@ -181,7 +181,7 @@ public class DonationUI {
         scanner.nextLine();
 
         List<String[]> lines = new ArrayList<>();
-        String path = "/home/tzuchaedahy/IdeaProjects/flood-homeless-support/src/main/resources/" + scanner.nextLine();
+        String path = "/home/tzuchaedahy/VSCode/flood-homeless-support/src/main/resources/" + scanner.nextLine();
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             reader.readLine();
 

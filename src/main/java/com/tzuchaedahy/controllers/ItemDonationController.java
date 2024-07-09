@@ -6,6 +6,7 @@ import com.tzuchaedahy.domain.ItemType;
 import com.tzuchaedahy.services.ItemDonationService;
 
 import java.util.List;
+import java.util.Map;
 
 public class ItemDonationController {
     private final ItemDonationService itemDonationService;
@@ -24,5 +25,9 @@ public class ItemDonationController {
 
     public boolean canReceiveDonation(DistributionCenter distributionCenter, ItemType itemType, Integer amount) {
         return itemDonationService.canReceiveDonation(distributionCenter, itemType, amount);
+    }
+
+    public Map<String, List<ItemDonation>> findAvailableItemsByName(String name) {
+        return itemDonationService.findAvailableItemsByName(name);
     }
 }

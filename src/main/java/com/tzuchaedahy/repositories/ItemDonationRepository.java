@@ -5,8 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -117,5 +119,60 @@ public class ItemDonationRepository {
         }
 
         return quantity;
+    }
+
+    public Map<String, List<ItemDonation>> findAvailableItemsByName(String name) {
+        PreparedStatement statement = null;
+        ResultSet result = null;
+        String query = "select dc.name as name, it.id as id, it.attributes - 'validade' as attributes, sum (itd.quantity) as quantity, it.id from item_donation itd inner join item it on itd.item_id = it.id inner join donation d on d.id = itd.donation_id inner join distribution_center dc on dc.id = d.distribution_center_id where it.name = (?) group by it.id, dc.name, it.attributes - 'validade' order by quantity desc";
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, List<ItemDonation>> items = new LinkedHashMap<>();
+        try {
+            statement = conn.prepareStatement(query);
+            statement.setString(1, name);
+            result = statement.executeQuery();
+            
+            while (result.next()) {
+                var item = new Item();
+                var itemDonation = new ItemDonation();
+
+                var attributes = result.getString("attributes");
+                Map<String, String> attributesMap = mapper.readValue(attributes, LinkedHashMap.class);
+
+                Map<String, String> orderedAttributesMap = new LinkedHashMap<>();
+                String[] orderedKeys = {"peso", "unidade de medida"};
+                for (String key : orderedKeys) {
+                    if (attributesMap.containsKey(key)) {
+                        orderedAttributesMap.put(key, attributesMap.get(key));
+                    }
+                }
+                item.setId(result.getObject("id", UUID.class));
+                item.setAttributes(orderedAttributesMap);
+
+                itemDonation.setItem(item);
+                itemDonation.setQuantity(result.getInt("quantity"));
+
+                var distributionCenterName = result.getString("name");
+                if (items.containsKey(distributionCenterName)) {
+                    var list = items.get(distributionCenterName);
+
+                    list.add(itemDonation);
+
+                    items.put(distributionCenterName, list);
+                } else {
+                    items.put(distributionCenterName, List.of(itemDonation));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("ocorreu um erro ao buscar todos os items");
+        } catch (JsonProcessingException e) {
+            throw new RepositoryException("ocorreu ao converter atributos");
+        }finally {
+            Db.closeStatement(statement);
+            Db.closeResultSet(result);
+        }
+
+        return items;
     }
 }

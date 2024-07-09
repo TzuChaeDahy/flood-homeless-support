@@ -10,7 +10,6 @@ public class Order {
     private String description;
 
     private OrderStatus status;
-    private DistributionCenter distributionCenter;
     private Shelter shelter;
 
     public Order() {
@@ -44,14 +43,6 @@ public class Order {
         this.status = status;
     }
 
-    public DistributionCenter getDistributionCenter() {
-        return distributionCenter;
-    }
-
-    public void setDistributionCenter(DistributionCenter distributionCenter) {
-        this.distributionCenter = distributionCenter;
-    }
-
     public Shelter getShelter() {
         return shelter;
     }
@@ -66,7 +57,7 @@ public class Order {
         if (o == null || getClass() != o.getClass()) return false;
 
         Order order = (Order) o;
-        return Objects.equals(id, order.id) && Objects.equals(description, order.description) && Objects.equals(status, order.status) && Objects.equals(distributionCenter, order.distributionCenter) && Objects.equals(shelter, order.shelter);
+        return Objects.equals(id, order.id) && Objects.equals(description, order.description) && Objects.equals(status, order.status) && Objects.equals(shelter, order.shelter);
     }
 
     @Override
@@ -74,7 +65,6 @@ public class Order {
         int result = Objects.hashCode(id);
         result = 31 * result + Objects.hashCode(description);
         result = 31 * result + Objects.hashCode(status);
-        result = 31 * result + Objects.hashCode(distributionCenter);
         result = 31 * result + Objects.hashCode(shelter);
         return result;
     }
