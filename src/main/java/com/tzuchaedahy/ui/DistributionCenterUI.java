@@ -3,9 +3,13 @@ package com.tzuchaedahy.ui;
 import com.tzuchaedahy.controllers.DistributionCenterController;
 import com.tzuchaedahy.controllers.ItemDonationController;
 import com.tzuchaedahy.controllers.ItemTypeController;
+import com.tzuchaedahy.controllers.OrderController;
+import com.tzuchaedahy.controllers.OrderItemController;
 import com.tzuchaedahy.domain.DistributionCenter;
 import com.tzuchaedahy.domain.ItemDonation;
 import com.tzuchaedahy.domain.ItemType;
+import com.tzuchaedahy.domain.Order;
+import com.tzuchaedahy.domain.OrderStatus;
 import com.tzuchaedahy.util.StringFormatter;
 
 import java.util.*;
@@ -17,11 +21,15 @@ public class DistributionCenterUI {
     public static ItemDonationController itemDonationController = new ItemDonationController();
     public static ItemTypeController itemTypeController = new ItemTypeController();
 
+    public static OrderController orderController = new OrderController();
+    public static OrderItemController orderItemController = new OrderItemController();
+
     public static void showMenu() {
         UI.clearScreen();
         System.out.println("Flood Homeless Support - Menu de Centro de Distribuiçao");
         System.out.println();
         System.out.println("1. Ver todos os itens doados");
+        System.out.println("2. Visualizar pedidos pendentes");
         System.out.println();
         System.out.println("0. Voltar ao menu inicial");
     }
@@ -44,6 +52,9 @@ public class DistributionCenterUI {
                     break;
                 case 1:
                     handleViewAllDonation(distributionCenter);
+                    break;
+                case 2:
+                    handlePendingOrders(distributionCenter);
                     break;
                 default:
                     UI.showInvalidOptionMessage();
@@ -128,5 +139,81 @@ public class DistributionCenterUI {
         });
 
         scanner.next();
+    }
+
+    public static void handlePendingOrders(DistributionCenter distributionCenter) {
+        var pendingOrders = orderController.pendingOrders(distributionCenter);
+
+        if(pendingOrders.size() <= 0) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nao ha pedidos pendentes para esse centro de distribuicao.");
+            return;
+        }
+
+        UI.clearScreen();
+        System.out.println("Pedidos pendentes: ");
+
+        final int[] i = {1};
+        pendingOrders.forEach(pendingOrder -> {
+            System.out.printf("%s. ID: %s (Para: %s)\n", i[0], pendingOrder.getId(), pendingOrder.getShelter().getName());
+        });
+        System.out.println("\n0. Voltar ao menu anterior");
+
+        int option = scanner.nextInt();
+
+        if (option < 0 || option > pendingOrders.size()) {
+            UI.clearScreen();
+            UI.showInvalidOptionMessage();
+        } else if (option == 0) {
+            UI.showRedirectingMessage();
+            return;
+        }
+
+        showPendingOrderOption(pendingOrders.get(option - 1));
+    }
+
+    private static void showPendingOrderOption(Order order) {
+        var orderItem = orderItemController.findByOrderID(order.getId());
+        UI.clearScreen();
+
+        if (orderItem == null) {
+            UI.showCustomMessage("Nao existe item para esse pedido!");
+        }
+        System.out.println("Item: ");
+        System.out.printf("%s %s - %s unidades\n", 
+        StringFormatter.capitalize(orderItem.getItem().getName()), 
+        handleAttributesViewCreation(orderItem.getItem().getAttributes()),
+        orderItem.getQuantity()
+        );
+
+        System.out.println("O que deseja realizar?");
+        System.out.println("1. Aceitar pedido");
+        System.out.println("2. Recusar pedido\n");
+        System.out.println("0. Voltar ao menu anterior");
+
+        int option = scanner.nextInt();
+
+        OrderStatus orderStatus = null;
+
+        String description = null;
+        if (option < 0 || option > 2) {
+            UI.showInvalidOptionMessage();
+        } else if (option == 1) {
+            orderStatus = OrderStatus.acceptedStatus();
+        } else if (option == 2) {
+            orderStatus = OrderStatus.declinedStatus();
+            UI.clearScreen();
+            System.out.print("Qual o motivo da recusa? ");
+            scanner.nextLine();
+            description = scanner.nextLine();
+        } else {
+            return;
+        }
+
+        itemDonationController.subtractQuantity(orderItem.getItem().getId() ,orderItem.getQuantity());
+        orderController.changeStatus(order.getId(), orderStatus.getId(), description);
+
+        UI.clearScreen();
+        UI.showCustomMessage("Dados salvos com sucesso!");
     }
 }

@@ -40,6 +40,22 @@ public class OrderStatus {
         return orderStatus;
     }
 
+    public static OrderStatus acceptedStatus() {
+        var orderStatus = new OrderStatus();
+        orderStatus.setId(UUID.fromString("75040965-0e33-4eba-a94a-4f21d3be3ce0"));
+        orderStatus.setName("aceito");
+
+        return orderStatus;
+    }
+
+    public static OrderStatus declinedStatus() {
+        var orderStatus = new OrderStatus();
+        orderStatus.setId(UUID.fromString("8ad87d55-cac7-4bc3-992b-7de5dc71704e"));
+        orderStatus.setName("recusado");
+
+        return orderStatus;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

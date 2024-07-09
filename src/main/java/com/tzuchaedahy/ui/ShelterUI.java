@@ -137,7 +137,7 @@ public class ShelterUI {
         System.out.printf("Flood Homeless Support - Menu de Abrigo - %s\n", name);
         System.out.println();
         System.out.println("1. Visualizar dados do abrigo");
-        System.out.println("2. Solicitar itens");
+        System.out.println("2. Solicitar item");
         System.out.println();
         System.out.println("0. Voltar ao menu anterior");
     }
@@ -199,19 +199,11 @@ public class ShelterUI {
         order.setShelter(shelter);
         order.setStatus(OrderStatus.defaultStatus());
 
-        boolean keepGoing = true;
-        do {
             var orderItem = chooseItem(shelter);
-
             if (orderItem == null) {
                 return;
             }
             orderItems.add(orderItem);
-
-            UI.clearScreen();
-            System.out.println("Selecionar outro item (s/n)? ");
-            keepGoing = scanner.next().charAt(0) == 's' ? true : false;
-        } while (keepGoing);
 
         if (orderItems.size() <= 0) {
             UI.clearScreen();
@@ -220,11 +212,11 @@ public class ShelterUI {
         }
 
         orderController.save(order);
-        orderItems.forEach(orderItem -> orderItem.setOrder(order));
+        orderItems.forEach(item -> item.setOrder(order));
         orderItemController.saveAll(orderItems);
 
         UI.clearScreen();
-        UI.showCustomMessage("Dados salvos com sucesso!");
+        UI.showCustomMessage("Pedido solicitado com sucessso!");
     }
 
     public static OrderItem chooseItem(Shelter shelter) {

@@ -2,9 +2,19 @@ package com.tzuchaedahy.repositories;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tzuchaedahy.domain.Item;
+import com.tzuchaedahy.domain.Order;
 import com.tzuchaedahy.domain.OrderItem;
 import com.tzuchaedahy.exceptions.RepositoryException;
 import com.tzuchaedahy.repositories.db.Db;
@@ -36,5 +46,49 @@ public class OrderItemRepository {
         } catch (SQLException e) {
             throw new RepositoryException("ocorreu um erro ao salvar um item de pedido" + e.getMessage());
         }
+    }
+
+    public OrderItem findByOrderID(UUID orderUUID) {
+        PreparedStatement statement = null;
+        ResultSet result = null;
+
+        String query = "select i.id as id, i.name as name, i.attributes as attributes, oi.quantity as quantity from order_item oi inner join item i on i.id = oi.item_id where oi.order_id = (?)";
+
+        ObjectMapper mapper = new ObjectMapper();
+        OrderItem orderItem = null;
+        try {
+            statement = conn.prepareStatement(query);
+            statement.setObject(1, orderUUID);
+
+            result = statement.executeQuery();
+            if (result.next()) {
+                orderItem = new OrderItem();
+
+                var item = new Item();
+
+                var attributes = result.getString("attributes");
+                Map<String, String> attributesMap = mapper.readValue(attributes, new TypeReference<Map<String,String>>() {});
+
+                Map<String, String> orderedAttributesMap = new TreeMap<>();
+                var treeSet = new TreeSet<>(attributesMap.keySet());
+
+                treeSet.forEach(key -> {
+                    orderedAttributesMap.put(key, attributesMap.get(key));
+                });
+
+                item.setId(result.getObject("id", UUID.class));
+                item.setName(result.getString("name"));
+                item.setAttributes(orderedAttributesMap);
+
+                orderItem.setItem(item);
+                orderItem.setQuantity(result.getInt("quantity"));
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("ocorreu um erro ao buscar um item de pedido por id");
+        } catch (JsonProcessingException e) {
+            throw new RepositoryException("ocorreu ao converter atributos");
+        }
+
+        return orderItem;
     }
 }

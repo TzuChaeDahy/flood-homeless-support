@@ -7,6 +7,7 @@ import com.tzuchaedahy.repositories.ItemDonationRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class ItemDonationService {
     private final ItemDonationRepository itemDonationRepository;
@@ -35,5 +36,9 @@ public class ItemDonationService {
 
     public Map<String, List<ItemDonation>> findAvailableItemsByName(String name) {
         return itemDonationRepository.findAvailableItemsByName(name);
+    }
+
+    public void subtractQuantity(UUID itemID, int quantity) {
+        itemDonationRepository.subtractQuantity(itemID, quantity);
     }
 }

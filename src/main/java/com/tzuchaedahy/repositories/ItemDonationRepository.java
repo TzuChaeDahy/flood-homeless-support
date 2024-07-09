@@ -180,4 +180,23 @@ public class ItemDonationRepository {
 
         return items;
     }
+
+    public void subtractQuantity(UUID itemID, int quantity) {
+        PreparedStatement statement = null;
+
+        String query = "update item_donation set quantity = quantity - (?) where item_id = (?)";
+
+        try {
+            statement = conn.prepareStatement(query);
+            statement.setInt(1, quantity);
+            statement.setObject(2, itemID);
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows <= 0) {
+                throw new RepositoryException("nenhuma linha do banco de dados foi alterada");
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("ocorreu um erro ao subtrair quantidade itens doados");
+        }
+    }
 }
