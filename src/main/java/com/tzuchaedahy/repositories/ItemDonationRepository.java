@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -138,15 +140,18 @@ public class ItemDonationRepository {
                 var itemDonation = new ItemDonation();
 
                 var attributes = result.getString("attributes");
-                Map<String, String> attributesMap = mapper.readValue(attributes, LinkedHashMap.class);
+                Map<String, String> attributesMap = mapper.readValue(attributes, new TypeReference<Map<String,String>>() {
+                    
+                });
 
-                Map<String, String> orderedAttributesMap = new LinkedHashMap<>();
-                String[] orderedKeys = {"peso", "unidade de medida"};
-                for (String key : orderedKeys) {
-                    if (attributesMap.containsKey(key)) {
-                        orderedAttributesMap.put(key, attributesMap.get(key));
-                    }
-                }
+                Map<String, String> orderedAttributesMap = new TreeMap<>();
+                var treeSet = new TreeSet<>(attributesMap.keySet());
+
+                treeSet.forEach(key -> {
+                    orderedAttributesMap.put(key, attributesMap.get(key));
+                });
+
+
                 item.setId(result.getObject("id", UUID.class));
                 item.setAttributes(orderedAttributesMap);
 

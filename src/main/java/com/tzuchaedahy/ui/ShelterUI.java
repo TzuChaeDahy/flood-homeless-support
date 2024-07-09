@@ -16,6 +16,7 @@ import com.tzuchaedahy.domain.Order;
 import com.tzuchaedahy.domain.OrderItem;
 import com.tzuchaedahy.domain.OrderStatus;
 import com.tzuchaedahy.domain.Shelter;
+import com.tzuchaedahy.util.StringFormatter;
 
 public class ShelterUI {
     public static Scanner scanner = new Scanner(System.in);
@@ -68,12 +69,12 @@ public class ShelterUI {
 
         var shelter = new Shelter();
 
-        System.out.print("Nome do abrigo :");
+        System.out.print("Nome do abrigo: ");
         shelter.setName(scanner.nextLine());
 
         UI.clearScreen();
         System.out.print(
-                "Endereço do abrigo (ex.: r. dr. décio martins costa, 312 - vila eunice nova, cachoeirinha - rs, 94920-170) :");
+                "Endereço do abrigo (ex.: r. dr. décio martins costa, 312 - vila eunice nova, cachoeirinha - rs, 94920-170): ");
         shelter.setAddress(scanner.nextLine());
 
         UI.clearScreen();
@@ -81,7 +82,7 @@ public class ShelterUI {
         shelter.setResponsible(scanner.nextLine());
 
         UI.clearScreen();
-        System.out.print("Telefone do abrigo - sem traço e nem espaços (ex.: 5199999000) : ");
+        System.out.print("Telefone do abrigo - sem traço e nem espaços (ex.: 5199999000): ");
         shelter.setPhone(scanner.nextLine());
 
         UI.clearScreen();
@@ -115,7 +116,7 @@ public class ShelterUI {
 
         final int[] i = { 1 };
         shelters.forEach(shelter -> {
-            System.out.printf("%s. %s\n", i[0], shelter.getName());
+            System.out.printf("%s. %s\n", i[0], StringFormatter.capitalize(shelter.getName()));
             i[0]++;
         });
 
@@ -171,15 +172,15 @@ public class ShelterUI {
 
         var donatedItems = shelterController.findDonatedItemTypesQuantities(shelter);
 
-        System.out.printf("Nome: %s\n", shelter.getName());
+        System.out.printf("Nome: %s\n", StringFormatter.capitalize(shelter.getName()));
         System.out.printf("Endereço: %s\n", shelter.getAddress());
-        System.out.printf("Nome do Responsável: %s\n", shelter.getResponsible());
+        System.out.printf("Nome do Responsável: %s\n", StringFormatter.capitalize(shelter.getResponsible()));
         System.out.printf("Email: %s\n", shelter.getEmail());
         System.out.printf("Telefone: %s\n", shelter.getPhone());
-        System.out.printf("Capacidade Total: %s\n", shelter.getCapacity());
+        System.out.printf("Capacidade Total: %s pessoas\n", shelter.getCapacity());
         System.out.printf("Ocupação: %.2f%%\n",
                 ((float) shelter.getOccupation() / (float) shelter.getCapacity()) * 100);
-        System.out.println("Unidade de itens recebidos: ");
+        System.out.println("Unidades de itens recebidos: ");
         if (donatedItems.size() <= 0) {
             System.out.println("Ainda não existem itens doados");
         } else {
@@ -232,7 +233,7 @@ public class ShelterUI {
 
         Map<String, ItemType> itemTypes = ItemTypeController.findAll();
         itemTypes.forEach((key, value) -> {
-            System.out.printf("%s. %s\n", key, value.getName());
+            System.out.printf("%s. %s\n", key, StringFormatter.capitalize(value.getName()));
         });
 
         int itemTypeIndex = scanner.nextInt();
@@ -245,7 +246,7 @@ public class ShelterUI {
         System.out.println("Qual item deseja solicitar?");
         final int[] i = { 1 };
         itemTypes.get(String.valueOf(itemTypeIndex)).getDefaultNames().forEach(name -> {
-            System.out.printf("%s. %s\n", i[0], name);
+            System.out.printf("%s. %s\n", i[0], StringFormatter.capitalize(name));
             i[0]++;
         });
 

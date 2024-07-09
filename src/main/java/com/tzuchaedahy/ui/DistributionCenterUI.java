@@ -82,9 +82,11 @@ public class DistributionCenterUI {
             return "";
         }
 
+        var treeSet = new TreeSet<>(attributes.keySet());
+
         final StringBuilder textAttributtes = new StringBuilder();
-        attributes.forEach((key, value) -> {
-            textAttributtes.append(value).append("/");
+        treeSet.forEach(key -> {
+            textAttributtes.append(attributes.get(key)).append("/");
         });
 
         return String.format("(%s)", textAttributtes.substring(0, textAttributtes.length() - 1));
@@ -96,7 +98,6 @@ public class DistributionCenterUI {
         List<ItemDonation> donation = itemDonationController.findAllSimplifiedByDistributionCenter(distributionCenter);
         Map<String, ItemType> itemTypes = itemTypeController.findAll();
 
-        final int[] i = {1};
         itemTypes.forEach((index, itemType) -> {
             System.out.println(StringFormatter.capitalize(itemType.getName()));
 
@@ -107,15 +108,17 @@ public class DistributionCenterUI {
             }
 
             final int[] total = {0};
+            final int[] i = {1};
             donationFiltered.forEach(itemDonation -> {
                     System.out.printf("%s. %s %s - %s unidades\n",
                             i[0],
-                            itemDonation.getItem().getName(),
+                            StringFormatter.capitalize(itemDonation.getItem().getName()),
                             handleAttributesViewCreation(itemDonation.getItem().getAttributes()),
                             itemDonation.getQuantity()
                     );
 
                     total[0] += itemDonation.getQuantity();
+                    i[0]++;
             });
 
             if (!donationFiltered.isEmpty()) {
