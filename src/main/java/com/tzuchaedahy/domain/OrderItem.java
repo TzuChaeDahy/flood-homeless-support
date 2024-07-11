@@ -34,7 +34,7 @@ public class OrderItem {
     }
 
     public void setQuantity(Integer quantity) {
-        if (quantity < 1) {
+        if (quantity < 0) {
             throw new DomainException("quantity cannot be less than one.");
         }
 

@@ -1,11 +1,15 @@
 package com.tzuchaedahy.ui;
 
 import com.tzuchaedahy.controllers.DistributionCenterController;
+import com.tzuchaedahy.controllers.DonationController;
+import com.tzuchaedahy.controllers.ItemController;
 import com.tzuchaedahy.controllers.ItemDonationController;
 import com.tzuchaedahy.controllers.ItemTypeController;
 import com.tzuchaedahy.controllers.OrderController;
 import com.tzuchaedahy.controllers.OrderItemController;
 import com.tzuchaedahy.domain.DistributionCenter;
+import com.tzuchaedahy.domain.Donation;
+import com.tzuchaedahy.domain.Item;
 import com.tzuchaedahy.domain.ItemDonation;
 import com.tzuchaedahy.domain.ItemType;
 import com.tzuchaedahy.domain.Order;
@@ -24,12 +28,16 @@ public class DistributionCenterUI {
     public static OrderController orderController = new OrderController();
     public static OrderItemController orderItemController = new OrderItemController();
 
+    public static DonationController donationController = new DonationController();
+    public static ItemController itemController = new ItemController();
+
     public static void showMenu() {
         UI.clearScreen();
         System.out.println("Flood Homeless Support - Menu de Centro de Distribuiçao");
         System.out.println();
         System.out.println("1. Ver todos os itens doados");
         System.out.println("2. Visualizar pedidos pendentes");
+        System.out.println("3. Transferir doação pra outro centro de distribuição");
         System.out.println();
         System.out.println("0. Voltar ao menu inicial");
     }
@@ -55,6 +63,9 @@ public class DistributionCenterUI {
                     break;
                 case 2:
                     handlePendingOrders(distributionCenter);
+                    break;
+                case 3:
+                    handleTransferDonation(distributionCenter);
                     break;
                 default:
                     UI.showInvalidOptionMessage();
@@ -215,5 +226,125 @@ public class DistributionCenterUI {
 
         UI.clearScreen();
         UI.showCustomMessage("Dados salvos com sucesso!");
+    }
+
+    public static void handleTransferDonation(DistributionCenter distributionCenter) {
+        UI.clearScreen();
+        System.out.println("Escolha o centro de distribuição de destino: ");
+
+        var distributionCenters = new ArrayList<>(distributionCenterController.findAll().values());
+        final int[] i = {1};
+        distributionCenters.forEach(center -> {
+            if (!distributionCenter.equals(center)) {
+                System.out.printf("%s. %s\n", i[0], StringFormatter.capitalize(center.getName()));
+                i[0]++;
+            }
+        });
+
+        int distributionCenterIndex = scanner.nextInt();
+
+        if (distributionCenterIndex <= 0 || distributionCenterIndex > distributionCenters.size()) {
+            UI.showInvalidOptionMessage();
+            return;
+        }
+
+        var destinyDistributionCenter = distributionCenters.get(distributionCenterIndex);
+
+        UI.clearScreen();
+        System.out.println("Que tipo de item voce deseja transferir?");
+
+        Map<String, ItemType> itemTypes = itemTypeController.findAll();
+        itemTypes.forEach((key, value) -> {
+            System.out.printf("%s. %s\n", key, StringFormatter.capitalize(value.getName()));
+        });
+
+        Integer itemTypeIndex = scanner.nextInt();
+        if (itemTypeIndex < 1 || itemTypeIndex > itemTypes.size()) {
+            UI.showInvalidOptionMessage();
+            return;
+        }
+
+        UI.clearScreen();
+        System.out.println("Qual item deseja transferir?");
+        final int[] j = { 1 };
+        itemTypes.get(String.valueOf(itemTypeIndex)).getDefaultNames().forEach(name -> {
+            System.out.printf("%s. %s\n", j[0], StringFormatter.capitalize(name));
+            j[0]++;
+        });
+
+        int itemNameIndex = scanner.nextInt();
+
+        if (itemNameIndex < 1 || itemNameIndex > itemTypes.get(String.valueOf(itemTypeIndex)).getDefaultNames().size()) {
+            UI.showInvalidOptionMessage();
+            return;
+        }
+
+        String itemName = itemTypes.get(String.valueOf(itemTypeIndex)).getDefaultNames().get(itemNameIndex - 1);
+        UUID[] donatedItemID = {null};
+
+        final int[] totalQuantity = {0};
+        var availableItemsMap = itemDonationController.findAvailableItemsByName(itemName);
+        availableItemsMap.forEach((key, list) -> {
+            if(distributionCenter.getName().equals(key)) {
+                list.forEach(itemDonation -> {
+                    donatedItemID[0] = itemDonation.getItem().getId();
+                    totalQuantity[0] += itemDonation.getQuantity();
+                });
+            }
+        });
+
+        if (totalQuantity[0] <= 0) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nao ha items disponiveis!");
+            return;
+        }
+ 
+        UI.clearScreen();
+        System.out.printf("Quantidade de itens disponiveis: %s\n\n", totalQuantity[0]);
+        System.out.println("Quantas unidades deseja transferir? ");
+
+        int quantity = scanner.nextInt();
+
+        var canReceiveDonation = itemDonationController.canReceiveDonation(
+            destinyDistributionCenter,
+            itemTypes.get(String.valueOf(itemTypeIndex)),
+            quantity
+        );
+
+        if (!canReceiveDonation) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nao foi possivel finalizar a solicitacao, pois a sua quantidade excede o limite do estoque.");
+            return;
+        }
+
+        if (quantity > totalQuantity[0]) {
+            UI.clearScreen();
+            UI.showCustomMessage("A quantidade a se doar nao pode ser maior que a disponivel.");
+            return;
+        }
+
+        Map<String, String> itemAttributes = new HashMap<>();
+        itemAttributes = DonationUI.mapItemAttributes(itemTypes.get(itemTypeIndex.toString()));
+
+        var donation = new Donation();
+        donation.setDistributionCenter(destinyDistributionCenter);
+        donationController.save(donation);
+
+        var item = new Item();
+        item.setName(itemName);
+        item.setItemType(itemTypes.get(itemTypeIndex.toString()));
+        item.setAttributes(itemAttributes);
+        itemController.save(item);
+
+        var itemDonation = new ItemDonation();
+        itemDonation.setDonation(donation);
+        itemDonation.setItem(item);
+        itemDonation.setQuantity(quantity);
+        itemDonationController.save(itemDonation);
+
+        itemDonationController.subtractQuantity(donatedItemID[0], quantity);
+
+        UI.clearScreen();
+        UI.showCustomMessage("Item transferido com sucesso!");
     }
 }
