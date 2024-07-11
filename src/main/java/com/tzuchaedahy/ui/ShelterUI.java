@@ -256,6 +256,18 @@ public class ShelterUI {
 
         int quantity = scanner.nextInt();
 
+        var canReceiveOrder = orderItemController.canReceiveOrder(
+            shelter,
+            itemTypes.get(String.valueOf(itemTypeIndex)),
+            quantity
+        );
+
+        if (!canReceiveOrder) {
+            UI.clearScreen();
+            UI.showCustomMessage("Nao foi possivel finalizar a solicitacao, pois a sua quantidade excede o limite do estoque.");
+            return null;
+        }
+
         Map<String, List<ItemDonation>> availableItems = itemDonationController.findAvailableItemsByName(itemName);
 
         if (availableItems.size() == 0) {

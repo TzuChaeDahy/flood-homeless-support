@@ -14,8 +14,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tzuchaedahy.domain.Item;
-import com.tzuchaedahy.domain.Order;
+import com.tzuchaedahy.domain.ItemType;
 import com.tzuchaedahy.domain.OrderItem;
+import com.tzuchaedahy.domain.Shelter;
 import com.tzuchaedahy.exceptions.RepositoryException;
 import com.tzuchaedahy.repositories.db.Db;
 
@@ -67,7 +68,9 @@ public class OrderItemRepository {
                 var item = new Item();
 
                 var attributes = result.getString("attributes");
-                Map<String, String> attributesMap = mapper.readValue(attributes, new TypeReference<Map<String,String>>() {});
+                Map<String, String> attributesMap = mapper.readValue(attributes,
+                        new TypeReference<Map<String, String>>() {
+                        });
 
                 Map<String, String> orderedAttributesMap = new TreeMap<>();
                 var treeSet = new TreeSet<>(attributesMap.keySet());
@@ -90,5 +93,31 @@ public class OrderItemRepository {
         }
 
         return orderItem;
+    }
+
+    public Integer countItemsByDistributionCenterAndType(Shelter shelter, ItemType itemType) {
+        PreparedStatement statement = null;
+        ResultSet result = null;
+        String query = "select sum(oi.quantity) from order_item oi inner join \"order\" o on oi.order_id = o.id inner join item i on oi.item_id = i.id where o.shelter_id = (?) and i.item_type_id = (?) and o.order_status_id = '75040965-0e33-4eba-a94a-4f21d3be3ce0'";
+
+        int quantity = 0;
+        try {
+            statement = conn.prepareStatement(query);
+            statement.setObject(1, shelter.getId());
+            statement.setObject(2, itemType.getId());
+
+            result = statement.executeQuery();
+
+            if (result.next()) {
+                quantity = result.getInt("sum");
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("ocorreu um erro ao buscar todos os items");
+        } finally {
+            Db.closeStatement(statement);
+            Db.closeResultSet(result);
+        }
+
+        return quantity;
     }
 }

@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import com.tzuchaedahy.domain.DistributionCenter;
 import com.tzuchaedahy.domain.Order;
-import com.tzuchaedahy.domain.OrderItem;
 import com.tzuchaedahy.services.OrderService;
 
 public class OrderController {
