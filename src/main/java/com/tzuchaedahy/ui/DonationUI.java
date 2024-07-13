@@ -259,11 +259,12 @@ public class DonationUI {
 
     public static Map<String, String> mapItemAttributes(ItemType itemType) {
         Map<String, String> itemAttributes = new HashMap<>();
+        scanner.nextLine();
 
         for (String attribute : itemType.getDefaultAttributes()) {
             UI.clearScreen();
             System.out.printf("Qual o(a) %s: ", attribute);
-            String result = scanner.next();
+            String result = scanner.nextLine();
 
             itemAttributes.put(attribute, result);
         }

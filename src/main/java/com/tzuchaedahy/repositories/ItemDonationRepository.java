@@ -126,7 +126,7 @@ public class ItemDonationRepository {
     public Map<String, List<ItemDonation>> findAvailableItemsByName(String name) {
         PreparedStatement statement = null;
         ResultSet result = null;
-        String query = "select dc.name as name, it.id as id, it.attributes - 'validade' as attributes, sum (itd.quantity) as quantity, it.id from item_donation itd inner join item it on itd.item_id = it.id inner join donation d on d.id = itd.donation_id inner join distribution_center dc on dc.id = d.distribution_center_id where it.name = (?) group by it.id, dc.name, it.attributes - 'validade' order by quantity desc";
+        String query = "select dc.name as name, it.id as id, it.attributes - 'validade' - 'descricao' as attributes, sum (itd.quantity) as quantity, it.id from item_donation itd inner join item it on itd.item_id = it.id inner join donation d on d.id = itd.donation_id inner join distribution_center dc on dc.id = d.distribution_center_id where it.name = (?) group by it.id, dc.name, it.attributes - 'validade' - 'descricao' order by quantity desc";
 
         ObjectMapper mapper = new ObjectMapper();
         Map<String, List<ItemDonation>> items = new LinkedHashMap<>();

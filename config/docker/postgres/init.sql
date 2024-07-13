@@ -25,19 +25,19 @@ insert into
 values (
         'b639837c-de33-4328-bccf-a6890a32c72d',
         'roupas',
-        '{tamanho, genero}',
+        '{descricao,tamanho,genero}',
         '{camisa,agasalho}'
     ),
     (
         '1b274519-eb1d-442a-9c54-bd3219934c50',
         'higiene',
-        '{}',
+        '{descricao}',
         '{sabonete,escova de dente,pasta de dente,absorvente}'
     ),
     (
         'e952f1d9-8813-4712-8be7-3616cb642372',
         'comidas',
-        '{peso,unidade de medida,validade}',
+        '{descricao,peso,unidade de medida,validade}',
         '{arroz,feijao,macarrao,frango}'
     );
 ---------- TABELA ITEM ----------
